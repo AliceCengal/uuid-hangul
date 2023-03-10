@@ -15,6 +15,21 @@
 
       const qs = (s) => document.querySelector(s);
 
+      function testRoundTrip() {
+        Array(10000)
+          .fill(1)
+          .forEach(() => {
+            const uuid = crypto.randomUUID();
+            const encoded = encode(uuid);
+            const decoded = decode(encoded);
+            if (decoded !== uuid)
+              throw new Error("Original " + uuid + " doesn't match " + decoded);
+          });
+        console.log("1000 test passed");
+      }
+
+      // testRoundTrip();
+
       function setup() {
         const generateBtn = qs("#uuid-generate");
         const regularUUID = qs("#uuid-regular");
@@ -82,7 +97,11 @@
 
   <body>
     <main>
-      <h1>UUID Hangul</h1>
+      <h1>UUID Base8192 Hangul</h1>
+      <span>
+        &#x2713; URL safe &emsp;&#x2713; Web scale &emsp;&#x2713; Aesthetic
+        &emsp;&#x2713; Cosmopolitan
+      </span>
       <div id="uuid-regular">&emsp;</div>
       <div id="uuid-spicy">&emsp;</div>
       <button id="uuid-generate">Generate</button>
