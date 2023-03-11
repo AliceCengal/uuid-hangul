@@ -13,45 +13,56 @@ export function decode(code) {
   const bitarray = Array(10).fill("");
   for (const i in code) {
     if (i == 0 || i == 9) {
-      bitarray[i] = (code.codePointAt(i) - HANGUL_START).toString(16).padStart(3, '0')
+      bitarray[i] = (code.codePointAt(i) - HANGUL_START)
+        .toString(16)
+        .padStart(3, "0");
     } else {
-      bitarray[i] = (code.codePointAt(i) - HANGUL_START).toString(2).padStart(13, '0');
+      bitarray[i] = (code.codePointAt(i) - HANGUL_START)
+        .toString(2)
+        .padStart(13, "0");
     }
   }
 
-  const first = bitarray[0]
-  const second = BigInt("0b" + bitarray.slice(1, 5).join("")).toString(16).padStart(13, '0')
-  const third = BigInt("0b" + bitarray.slice(5, 9).join("")).toString(16).padStart(13, '0')
-  const fourth = bitarray[9]
+  const first = bitarray[0];
+  const second = bitarray.slice(1, 5).join("");
+  const third = bitarray.slice(5, 9).join("");
+  const fourth = bitarray[9];
 
   const output = [
-    first + second.slice(0, 5),
-    second.slice(5, 9),
-    second.slice(9, 13),
-    third.slice(0, 4),
-    third.slice(4) + fourth,
-  ]
-  return output.join("-")
+    first + parseInt(second.slice(0, 20), 2).toString(16).padStart(5, "0"),
+    parseInt(second.slice(20, 36), 2).toString(16).padStart(4, "0"),
+    parseInt(second.slice(36), 2).toString(16).padStart(4, "0"),
+    parseInt(third.slice(0, 16), 2).toString(16).padStart(4, "0"),
+    parseInt(third.slice(16), 2).toString(16).padStart(9, "0") + fourth,
+  ];
+  return output.join("-");
 }
 
 const mask1 = 0x1fffn;
 
 function parse13(uuid) {
   let v;
-  const arr = Array(10).fill(0)
-  arr[0] = parseInt(uuid.slice(0, 3), 16)
+  const arr = Array(10).fill(0);
+  arr[0] = parseInt(uuid.slice(0, 3), 16);
 
-  arr[1] = Number((v = BigInt("0x" + uuid.slice(3, 8) + uuid.slice(9, 13) + uuid.slice(14, 18))) >> 39n);
-  arr[2] = Number((v >> 26n) & mask1);
-  arr[3] = Number((v >> 13n) & mask1);
-  arr[4] = Number(v & mask1);
+  v =
+    parseInt(uuid.slice(3, 8), 16).toString(2).padStart(20, "0") +
+    parseInt(uuid.slice(9, 13), 16).toString(2).padStart(16, "0") +
+    parseInt(uuid.slice(14, 18), 16).toString(2).padStart(16, "0");
+  arr[1] = parseInt(v.slice(0, 13), 2);
+  arr[2] = parseInt(v.slice(13, 26), 2);
+  arr[3] = parseInt(v.slice(26, 39), 2);
+  arr[4] = parseInt(v.slice(39), 2);
 
-  arr[5] = Number((v = BigInt("0x" + uuid.slice(19, 23) + uuid.slice(24, 33), 16)) >> 39n);
-  arr[6] = Number((v >> 26n) & mask1);
-  arr[7] = Number((v >> 13n) & mask1);
-  arr[8] = Number(v & mask1);
+  v =
+    parseInt(uuid.slice(19, 23), 16).toString(2).padStart(16, "0") +
+    parseInt(uuid.slice(24, 33), 16).toString(2).padStart(36, "0");
+  arr[5] = parseInt(v.slice(0, 13), 2);
+  arr[6] = parseInt(v.slice(13, 26), 2);
+  arr[7] = parseInt(v.slice(26, 39), 2);
+  arr[8] = parseInt(v.slice(39), 2);
 
-  arr[9] = parseInt(uuid.slice(33, 36), 16)
+  arr[9] = parseInt(uuid.slice(33, 36), 16);
 
   return arr;
 }
